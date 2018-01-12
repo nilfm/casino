@@ -495,12 +495,15 @@ void blackjack(int& money){
                 cont = false;
             }
             else if (score < 21){
-                card = draw_card(D);
-                if (card%13 == 0) dealer_score += decide_ace(dealer_score);
-                else dealer_score += blackjack_points(card);
-                if (dealer_score == 21){
-                    cont = false;
+                if (dealer_score < 16 or get_random_int(0, 1) == 1){
+                    card = draw_card(D);
+                    if (card%13 == 0) dealer_score += decide_ace(dealer_score);
+                    else dealer_score += blackjack_points(card);
+                    if (dealer_score == 21){
+                        cont = false;
+                    }
                 }
+                else cout << "The dealer has skipped his turn." << endl;
             }
         }
     }
@@ -651,7 +654,8 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
         }
         else{
             int maximum = money;
-            if (counter == 2) maximum = max(bets)-bets[0];  
+            if (counter == 2) maximum = max(bets)-bets[0];
+            cout << "You have " << money << " coins." << endl;
             int bet = get_int(minimum, maximum, message_bet, error_bet_poker);
             money -= bet;
             bets[0] += bet;
