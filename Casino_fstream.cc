@@ -946,10 +946,11 @@ int main(){
         Users.push_back(new_user);
     }
     
+    //GAME LOOP
     while (not end and money > 0){
         overwrite(Users, money, name);
         cout << endl << endl << "You have " << money << " coins." << endl;
-        int choice = get_int(0, 4, options_menu, error_options_menu);
+        int choice = get_int(0, 5, options_menu, error_options_menu);
         if (choice == 0) end = true;
         else if (choice == 1) roulette(money);
         else if (choice == 2) blackjack(money);
