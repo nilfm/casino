@@ -75,6 +75,16 @@ Deck create_deck(int n){
     return D;
 }
 
+string encrypt(string s){
+    string encrypt = s;
+    int size = s.size();
+    for (int i = 0; i < size; i++){
+        if (i%2 == 0) encrypt[i] += i;
+        else encrypt[i] -= i;
+    }
+    return encrypt;
+}
+
 string decode(int n){
     //hearts, diamonds: red
     //clubs, spades: black
@@ -899,7 +909,6 @@ int main(){
     bool end = false;
     
     vector<User> Users;
-    //COMENCEM PROVES
 	ifstream file;
     file.open(ADDRESS, ios::in);
     if (!file) {
@@ -911,9 +920,7 @@ int main(){
         Users.push_back(u);
     }
     file.close();
-        
-    //ACABEM PROVES
-    
+            
     int previous_user = -1;
     int money = 50;
     cout << "Welcome to the Casino!" << endl;
@@ -962,11 +969,11 @@ int main(){
             show_highscores(Users);
         }
         else{
-            cout << endl << "Roulette:" << endl;
+            cout << endl << "ROULETTE:" << endl;
             cout << roulette_explanation << endl;
-            cout << "Blackjack:" << endl;
+            cout << "BLACKJACK:" << endl;
             cout << blackjack_explanation << endl;
-            cout << "Poker:" << endl;
+            cout << "POKER:" << endl;
             cout << poker_explanation;
         }
     }
