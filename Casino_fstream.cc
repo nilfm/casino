@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <ctime>
 #include <stdlib.h>
+#include <windows.h>
 using namespace std;
 
 typedef vector<bool> Deck;
@@ -69,6 +70,20 @@ int get_int(int minimum, int maximum, string query, string err){
 int get_random_int(int minimum, int maximum){
     return rand()%(maximum-minimum + 1) + minimum;
 }
+
+string get_password(){
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE); 
+    DWORD mode = 0;
+    GetConsoleMode(hStdin, &mode);
+    SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
+
+    string s;
+    cin >> s;
+    SetConsoleMode(hStdin, mode);
+    cout << endl;
+    return s;
+}
+
 
 Deck create_deck(int n){
     Deck D(n, false);
@@ -601,6 +616,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
         int minimum = max(bets)-bets[0];
 
         if (primer){
+            cout << "The minimum initial bet is 5 coins." << endl;
             primer = false;
             minimum = 5;
         }
@@ -909,8 +925,7 @@ void change_password(vector<User>& Users, int index, bool& exit){
     bool correct = false;
     while (count < 3 and not correct){
         cout << endl << "Enter your password: ";
-        string pass;
-        cin >> pass;
+        string pass = get_password();
         if (encrypt(pass) == Users[index].password) correct = true;
         else cout << "Wrong password." << endl;
         count++;
@@ -925,9 +940,9 @@ void change_password(vector<User>& Users, int index, bool& exit){
     while (not correct){
         string password2;
         cout << "Enter your new password: ";
-        cin >> password1;
+        password1 = get_password();
         cout << "Re-enter your new password: ";
-        cin >> password2;
+        password2 = get_password();
         if (password1 == password2) correct = true;
         else cout << "The passwords do not match." << endl;
         if (int(password1.size()) < 5){
@@ -976,7 +991,7 @@ int main(){
         while (count < 3 and not correct){
             cout << endl << "Enter your password: ";
             string pass;
-            cin >> pass;
+            pass = get_password();
             if (encrypt(pass) == Users[previous_user].password) correct = true;
             else cout << "Wrong password." << endl;
             count++;
@@ -1001,9 +1016,9 @@ int main(){
         while (not correct){
             string password2;
             cout << "Enter a password: ";
-            cin >> password1;
+            password1 = get_password();
             cout << "Re-enter the password: ";
-            cin >> password2;
+            password2 = get_password();
             if (password1 == password2) correct = true;
             else cout << "The passwords do not match." << endl;
             if (int(password1.size()) < 5){
