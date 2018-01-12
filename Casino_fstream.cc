@@ -41,8 +41,8 @@ const string poker_explanation = "Poker is played against 3 computer-controlled 
 
 //MESSAGES
 const string error_options_1_2 = "Whoops. Please enter either 1 or 2";
-const string options_menu = "Press 0 to exit.\nPress 1 to play Roulette.\nPress 2 to play Blackjack.\nPress 3 to play Poker.\nPress 4 to see the high scores.\nPress 5 to read the rules for all the games.\n";
-const string error_options_menu = "Whoops. Enter a number between 0 and 4. ";
+const string options_menu = "Press 0 to exit.\nPress 1 to play Roulette.\nPress 2 to play Blackjack.\nPress 3 to play Poker.\nPress 4 to see the high scores.\nPress 5 to read the rules for all the games.\nPress 6 to change your password.\n";
+const string error_options_menu = "Whoops. Enter a number between 0 and 6. ";
 const string options_roulette = "Press 1 to bet on a number.\nPress 2 to bet on even/odd.\n";
 const string message_bet = "How much do you want to bet? ";
 const string error_bet = "Whoops. Enter a number between 1 and your current money. ";
@@ -879,7 +879,7 @@ void overwrite(vector<User>& Users, int money, string name){
                 Users[i].high_score = money;
             }
         }
-        file << Users[i].name << " " << Users[i].money << " " << Users[i].high_score << " " << Users[i].times_played << endl;
+        file << Users[i].name << " " << Users[i].password << " " << Users[i].money << " " << Users[i].high_score << " " << Users[i].times_played << endl;
     }
     file.close();
 }
@@ -904,6 +904,41 @@ void show_highscores(const vector<User>& Users){
     }
 }
 
+void change_password(vector<User>& Users, int index, bool& exit){
+    int count = 0;
+    bool correct = false;
+    while (count < 3 and not correct){
+        cout << endl << "Enter your password: ";
+        string pass;
+        cin >> pass;
+        if (encrypt(pass) == Users[index].password) correct = true;
+        else cout << "Wrong password." << endl;
+        count++;
+    }
+    if (not correct){
+        cout << "Too many attempts. Exiting..." << endl;
+        exit = true;
+        return;
+    }
+    correct = false;
+    string password1;
+    while (not correct){
+        string password2;
+        cout << "Enter your new password: ";
+        cin >> password1;
+        cout << "Re-enter your new password: ";
+        cin >> password2;
+        if (password1 == password2) correct = true;
+        else cout << "The passwords do not match." << endl;
+        if (int(password1.size()) < 5){
+            cout << "The password is too short." << endl;
+            correct = false;
+        }
+    }
+    Users[index].password = encrypt(password1);
+    cout << "Password changed successfully." << endl;
+}
+
 int main(){
     srand(time(NULL));
     bool end = false;
@@ -916,7 +951,7 @@ int main(){
         return 1;   // call system to stop
     }
     User u;
-    while (file >> u.name >> u.money >> u.high_score >> u.times_played){
+    while (file >> u.name >> u.password >> u.money >> u.high_score >> u.times_played){
         Users.push_back(u);
     }
     file.close();
@@ -934,7 +969,22 @@ int main(){
             money = Users[i].money;
         }
     }
+    
     if (previous_user != -1){ 
+        int count = 0;
+        bool correct = false;
+        while (count < 3 and not correct){
+            cout << endl << "Enter your password: ";
+            string pass;
+            cin >> pass;
+            if (encrypt(pass) == Users[previous_user].password) correct = true;
+            else cout << "Wrong password." << endl;
+            count++;
+        }
+        if (not correct){
+            cout << "Too many attempts. Exiting..." << endl;
+            return 1;
+        }
         cout << "Hi again, " << name << "!" << endl;
         Users[previous_user].times_played++;
         if (Users[previous_user].money <= 0){
@@ -943,21 +993,39 @@ int main(){
             money = 50;
         }
     }
+    
     else{
         cout << "Welcome, " << name << "!" << endl;
+        bool correct = false;
+        string password1;
+        while (not correct){
+            string password2;
+            cout << "Enter a password: ";
+            cin >> password1;
+            cout << "Re-enter the password: ";
+            cin >> password2;
+            if (password1 == password2) correct = true;
+            else cout << "The passwords do not match." << endl;
+            if (int(password1.size()) < 5){
+                cout << "The password is too short." << endl;
+                correct = false;
+            }
+        }
         User new_user;
         new_user.name = name;
+        new_user.password = encrypt(password1);
         new_user.money = 50;
         new_user.high_score = 50;
         new_user.times_played = 1;
         Users.push_back(new_user);
+        previous_user = Users.size() -1;
     }
-    
+
     //GAME LOOP
     while (not end and money > 0){
         overwrite(Users, money, name);
         cout << endl << endl << "You have " << money << " coins." << endl;
-        int choice = get_int(0, 5, options_menu, error_options_menu);
+        int choice = get_int(0, 6, options_menu, error_options_menu);
         if (choice == 0) end = true;
         else if (choice == 1) roulette(money);
         else if (choice == 2) blackjack(money);
@@ -968,13 +1036,18 @@ int main(){
         else if (choice == 4){
             show_highscores(Users);
         }
-        else{
+        else if (choice == 5){
             cout << endl << "ROULETTE:" << endl;
             cout << roulette_explanation << endl;
             cout << "BLACKJACK:" << endl;
             cout << blackjack_explanation << endl;
             cout << "POKER:" << endl;
             cout << poker_explanation;
+        }
+        else{
+            bool exit = false;
+            change_password(Users, previous_user, exit);
+            if (exit) return 1;
         }
     }
     
