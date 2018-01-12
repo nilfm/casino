@@ -916,7 +916,7 @@ int main(){
     cout << "What's your name? ";
     string name;
     cin >> name;
-    
+        
     for (int i = 0; i < int(Users.size()) and previous_user == -1; i++){
         if (Users[i].name == name){
             previous_user = i;
