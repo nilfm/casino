@@ -8,6 +8,9 @@
 #include <windows.h>
 using namespace std;
 
+//FILE ADDRESS
+const string ADDRESS = "C:\\Users\\Nil\\Desktop\\Prog\\Casino\\dades.txt";
+
 typedef vector<bool> Deck;
 typedef vector<int> Cards;
 struct Hand{
@@ -30,10 +33,6 @@ struct User{
     int times_played;
     int high_score;
 };
-
-
-//ADREÇA DEL FITXER
-const string ADDRESS = "C:\\Users\\Nil\\Desktop\\Prog\\Casino\\dades.txt";
 
 //EXPLANATIONS
 const string roulette_explanation = "You can bet on a number (from 1 to 36) or on even/odd.\nIf zero comes out, you lose no matter what.\n";
