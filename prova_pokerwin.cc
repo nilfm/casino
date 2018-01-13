@@ -256,8 +256,12 @@ int check_three(const Hand& a, const Hand& b){
     bool tie = false;
     for (int i = 12; i >= 0 and not tie; i--){
         if (a.cards[i] == 3 and b.cards[i] == 3) tie = true;
-        else if (a.cards[i] == 3) return 1;
-        else if (b.cards[i] == 3) return 2;
+        else if (a.cards[i] == 3){
+            return 1;
+        }
+        else if (b.cards[i] == 3){
+            return 2;
+        }
     }
     if (not tie) return 0;
     for (int i = 12; i >= 0; i--){
@@ -603,16 +607,9 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
         else return call;
     }
 }
-
-//TOFINISH
-bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& table){
-    string s; //useless
-    int r = rate_cards(pc.hand, table, s);
-    int ran = get_random_int(0, 100);
-    if (ran > 25) return true;
-    else if (r > 60) return true;
-    else if (r > 30 and ran > 10) return true;
-    return false;
+//TODO
+bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame){
+    return true;
 }
 
 //"negotiation" to bet
@@ -623,6 +620,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
         int minimum = max(bets)-bets[0];
 
         if (primer){
+            cout << "The minimum initial bet is 5 coins." << endl;
             primer = false;
             minimum = 5;
         }
@@ -651,7 +649,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
                 all_in = true;
                 bets[0] += money;
                 if (ingame[1]){
-                    if (stays(pc1, bets, ingame, table)){
+                    if (stays(pc1, bets, ingame)){
                         bets[1] = bets[0];
                         cout << "Computer 1 has matched your all-in!" << endl;
                     }
@@ -661,7 +659,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
                     }
                 }
                 if (ingame[2]){
-                    if (stays(pc1, bets, ingame, table)){
+                    if (stays(pc1, bets, ingame)){
                         bets[2] = bets[0];
                         cout << "Computer 2 has matched your all-in!" << endl;
                     }
@@ -671,7 +669,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
                     }
                 }
                 if (ingame[3]){
-                    if (stays(pc1, bets, ingame, table)){
+                    if (stays(pc1, bets, ingame)){
                         bets[3] = bets[0];
                         cout << "Computer 3 has matched your all-in!" << endl;
                     }
@@ -688,8 +686,6 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             int maximum = money;
             if (counter == 2) maximum = max(bets)-bets[0];
             cout << "You have " << money << " coins." << endl;
-            cout << "The minimum bet is " << minimum << " coins." << endl;
-            cout << "The maximum bet is " << maximum << " coins." << endl;
             int bet = get_int(minimum, maximum, message_bet, error_bet_poker);
             money -= bet;
             bets[0] += bet;
@@ -727,7 +723,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             for (int i = 1; i < 4; i++){
                 if (ingame[i] and bets[i] != bets[0]) agree = false;
             }
-            cout << "The maximum bet has been " << max(bets) << " coins." << endl;
+            cout << "The maximum bet has been " << max(bets) << endl;
         }
         counter++;
     }
@@ -887,199 +883,54 @@ void poker(int& money){
     
 }
 
-void overwrite(vector<User>& Users, int money, string name){
-    ofstream file;
-    file.open(ADDRESS, ios::trunc);
-    file.close();
-    file.open(ADDRESS);
-    for (int i = 0; i < int(Users.size()); i++){
-        if (Users[i].money == 0){
-            Users[i].money = 50;
-            Users[i].times_played = 0;
-        }
-        if (Users[i].name == name){
-            Users[i].money = money;
-            if (money > Users[i].high_score){
-                Users[i].high_score = money;
-            }
-        }
-        file << Users[i].name << " " << Users[i].password << " " << Users[i].money << " " << Users[i].high_score << " " << Users[i].times_played << endl;
-    }
-    file.close();
-}
-
-bool comp(const User& u1, const User& u2){
-    return (u1.high_score > u2.high_score);
-}
-
-void show_highscores(const vector<User>& Users){
-    vector<User> copy = Users;
-    sort(copy.begin(), copy.end(), comp);
-    cout << endl << "HIGH SCORES:" << endl;
-    int max = 0;
-    for (int i = 0; i < int(copy.size()); i++){
-        if (int(copy[i].name.size()) > max) max = int(copy[i].name.size());
-    }
-    for (int i = 0; i < int(copy.size()) and i < 10; i++){
-        int l = copy[i].name.size();
-        cout << i+1 << ". " << copy[i].name << " ";
-        for (int i = 0; i < max+2-l; i++) cout << ".";
-        cout << " " << copy[i].high_score << endl;
-    }
-}
-
-void change_password(vector<User>& Users, int index, bool& exit){
-    int count = 0;
-    bool correct = false;
-    while (count < 3 and not correct){
-        cout << endl << "Enter your password: ";
-        string pass = get_password();
-        if (encrypt(pass) == Users[index].password) correct = true;
-        else cout << "Wrong password." << endl;
-        count++;
-    }
-    if (not correct){
-        cout << "Too many attempts. Exiting..." << endl;
-        exit = true;
-        return;
-    }
-    correct = false;
-    string password1;
-    while (not correct){
-        string password2;
-        cout << "Enter your new password: ";
-        password1 = get_password();
-        cout << "Re-enter your new password: ";
-        password2 = get_password();
-        if (password1 == password2) correct = true;
-        else cout << "The passwords do not match." << endl << endl;
-        if (int(password1.size()) < 5){
-            cout << "The password is too short." << endl;
-            correct = false;
-        }
-    }
-    Users[index].password = encrypt(password1);
-    cout << "Password changed successfully." << endl;
-}
-
 int main(){
     srand(time(NULL));
-    bool end = false;
-    
-    vector<User> Users;
-	ifstream file;
-    file.open(ADDRESS, ios::in);
-    if (!file) {
-        cout << "Unable to open file dades.txt" << endl;
-        return 1;   // call system to stop
-    }
-    User u;
-    while (file >> u.name >> u.password >> u.money >> u.high_score >> u.times_played){
-        Users.push_back(u);
-    }
-    file.close();
-            
-    int previous_user = -1;
-    int money = 50;
-    cout << "Welcome to the Casino!" << endl;
-    cout << "What's your name? ";
-    string name;
-    cin >> name;
-        
-    for (int i = 0; i < int(Users.size()) and previous_user == -1; i++){
-        if (Users[i].name == name){
-            previous_user = i;
-            money = Users[i].money;
+    string s;
+    bool careful = false;
+    while (not careful or cin >> s){
+        careful = false;
+        Deck D = create_deck(52);
+        Cards table(5);
+        for (int i = 0; i < 5; i++){
+            table[i] = draw_card(D);
         }
-    }
-    
-    if (previous_user != -1){ 
-        int count = 0;
-        bool correct = false;
-        while (count < 3 and not correct){
-            cout << endl << "Enter your password: ";
-            string pass;
-            pass = get_password();
-            if (encrypt(pass) == Users[previous_user].password) correct = true;
-            else cout << "Wrong password." << endl;
-            count++;
+        Cards hand1(2);
+        for (int i = 0; i < 2; i++){
+            hand1[i] = draw_card(D);
         }
-        if (not correct){
-            cout << "Too many attempts. Exiting..." << endl;
-            return 1;
+        Cards hand2(2);
+        for (int i = 0; i < 2; i++){
+            hand2[i] = draw_card(D);
         }
-        cout << "Welcome back, " << name << "!" << endl;
-        Users[previous_user].times_played++;
-        if (Users[previous_user].money <= 0){
-            Users[previous_user].money = 50;
-            Users[previous_user].times_played = 1;
-            money = 50;
-        }
-    }
-    
-    else{
-        cout << "Welcome, " << name << "!" << endl;
-        bool correct = false;
-        string password1;
-        while (not correct){
-            string password2;
-            cout << "Enter a password: ";
-            password1 = get_password();
-            cout << "Re-enter the password: ";
-            password2 = get_password();
-            if (password1 == password2) correct = true;
-            else cout << "The passwords do not match." << endl << endl;
-            if (int(password1.size()) < 5){
-                cout << "The password is too short." << endl;
-                correct = false;
+        Hand h1 = create_hand(hand1, table);
+        Hand h2 = create_hand(hand2, table);
+        bool win = poker_winner(h1, h2);
+        string s1, s2;
+        int r1 = rate_cards(hand1, table, s1);
+        int r2 = rate_cards(hand2, table, s2);
+        //if (r1 >= 100 or r2 >= 100) cout << "WOW!" << endl << endl, careful = true;
+        careful = true; //change
+        if (careful){
+            cout << "TABLE" << endl;
+            for (int i = 0; i < 5; i++){
+                cout << decode(table[i]) << endl;
             }
-        }
-        User new_user;
-        new_user.name = name;
-        new_user.password = encrypt(password1);
-        new_user.money = 50;
-        new_user.high_score = 50;
-        new_user.times_played = 1;
-        Users.push_back(new_user);
-        previous_user = Users.size() -1;
+            cout << endl;
+            cout << "HAND 1" << endl;
+            for (int i = 0; i < 2; i++){
+                cout << decode(hand1[i]) << endl;
+            }
+            cout << endl;
+            cout << "HAND 2" << endl;
+            for (int i = 0; i < 2; i++){
+                cout << decode(hand2[i]) << endl;
+            }
+            cout << endl;
+            cout << "Player 1 had a " << s1 << ". Score: " << r1 << endl;
+            cout << "Player 2 had a " << s2 << ". Score: " << r2 << endl;
+            if (win) cout << "PLAYER 1 WINS" << endl;
+            else cout << "PLAYER 2 WINS" << endl;
+            cout << endl << endl;
+        } 
     }
-
-    //GAME LOOP
-    while (not end and money > 0){
-        overwrite(Users, money, name);
-        cout << endl << endl << "You have " << money << " coins." << endl;
-        int choice = get_int(0, 6, options_menu, error_options_menu);
-        if (choice == 0) end = true;
-        else if (choice == 1) roulette(money);
-        else if (choice == 2) blackjack(money);
-        else if (choice == 3){
-            if (money > 5) poker(money);
-            else cout << "Sorry, you must have at least 5 coins to enter a poker game";
-        }
-        else if (choice == 4){
-            show_highscores(Users);
-        }
-        else if (choice == 5){
-            cout << endl << "ROULETTE:" << endl;
-            cout << roulette_explanation << endl;
-            cout << "BLACKJACK:" << endl;
-            cout << blackjack_explanation << endl;
-            cout << "POKER:" << endl;
-            cout << poker_explanation;
-        }
-        else{
-            bool exit = false;
-            change_password(Users, previous_user, exit);
-            if (exit) return 1;
-        }
-    }
-    
-    if (money == 0){
-        cout << endl << "You're broke! Game over." << endl;
-        cout << "You had played " << Users[previous_user].times_played << " times." << endl;
-        cout << "Your high score is " << Users[previous_user].high_score << endl;
-    }
-    else cout << endl << "You have " << money << " coins. See you soon!" << endl;
-    overwrite(Users, money, name);
-    file.close();
 }
