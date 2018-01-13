@@ -562,7 +562,7 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
     //return call;
     //END TEMPORARY
     
-    
+    //what turn are we in
     int i = 0;
     while (table[i] != -1 and i < 5) i++;
     
@@ -577,6 +577,9 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
     
     string s; //useless, but we need an argument for rate
     int rate = rate_cards(pc.hand, table, s);
+    
+    //if the call is 0, gotta raise a bit
+    if (call == 0 and rate > 20 and r > 35) return call + (10*get_random_int(1, 4) + 5*get_random_int(1, 5));
     
     if (counter == 2){
         //fold
