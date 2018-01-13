@@ -1,7 +1,7 @@
 # Casino
 Little game I'm making in C++, work in progress
 
-INSTRUCTIONS TO SET UP Casino_fstream
+INSTRUCTIONS TO SET UP Casino_windows OR Casino_linux
 
 -create an empty text file somewhere in your PC
 
