@@ -573,7 +573,7 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
     if (i == 4) r -= r/8;
     
     //feeling lucky
-    if (r > 80) return (call + get_random_int(0, 3)*(call/2));
+    if (r > 85) return (call + get_random_int(0, 3)*(call/2));
     
     string s; //useless, but we need an argument for rate
     int rate = rate_cards(pc.hand, table, s);
@@ -594,8 +594,8 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
         //raise
         if (rate > 90) return (10+call)*get_random_int(1, 4);
         if (rate > 80) return (10+call)*get_random_int(1, 3);
-        if (rate > 65) return (10+call)*get_random_int(1, 2);
-        if (rate > 50 and get_random_int(0, 100) > 5) return call + call/2;
+        if (rate > 65 and get_random_int(0, 100) >  50) return (10+call)*get_random_int(1, 2);
+        if (rate > 50 and get_random_int(0, 100) > 20) return call + call/2;
         //fold
         if (r > rate*3){
             if (call == 0) return 0;
@@ -1082,5 +1082,4 @@ int main(){
     }
     else cout << endl << "You have " << money << " coins. See you soon!" << endl;
     overwrite(Users, money, name);
-    file.close();
 }
