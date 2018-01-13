@@ -31,73 +31,13 @@ struct User{
     int high_score;
 };
 
-
-//ADREÇA DEL FITXER
-const string ADDRESS = "C:\\Users\\Nil\\Desktop\\Prog\\Casino\\dades.txt";
-
-//EXPLANATIONS
-const string roulette_explanation = "You can bet on a number (from 1 to 36) or on even/odd.\nIf zero comes out, you lose no matter what.\n";
-const string blackjack_explanation = "Your goal is to end the game with more points than the Dealer.\nAt the start of the game, you and the dealer are both dealt two cards, but you can only see one of his cards.\nYou can end the game at any moment, but you must have at least 10 points to win.\nIf the game is not stopped earlier, whoever goes above 21 points first loses.\nIn the event of a tie, the dealer wins.\n";
-const string poker_explanation = "Poker is played against 3 computer-controlled players.\nEvery player is dealt 2 cards.\nThen you can bet, and 3 more are revealed on the table (the flop).\nThen you can bet again, and 1 more is revealed on the table (the turn).\nThen you can bet again, and 1 more is revealed on the table (the river).\nYou can now bet for the last time and the hands of those players still standing are compared.\nThe ranking of hands goes as follows:\nStraight flush > Quads > Full house > Flush > Straight > Threes > Two pair > Pair > Highest card\n";
-
-//MESSAGES
-const string error_options_1_2 = "Whoops. Please enter either 1 or 2";
-const string options_menu = "Press 0 to exit.\nPress 1 to play Roulette.\nPress 2 to play Blackjack.\nPress 3 to play Poker.\nPress 4 to see the high scores.\nPress 5 to read the rules for all the games.\nPress 6 to change your password.\n";
-const string error_options_menu = "Whoops. Enter a number between 0 and 6. ";
-const string options_roulette = "Press 1 to bet on a number.\nPress 2 to bet on even/odd.\n";
-const string message_bet = "How much do you want to bet? ";
-const string error_bet = "Whoops. Enter a number between 1 and your current money. ";
-const string error_bet_poker = "Whoops. Incorrect amount.";
-const string guess_roulette = "Choose a number between 1 and 36 to bet on: ";
-const string error_guess_roulette = "Whoops. Enter a number between 1 and 36. ";
-const string guess_even_odd = "Press 1 to bet on 'odd'.\nPress 2 to bet on 'even'\n";
-const string options_blackjack = "Press 1 to receive a card.\nPress 2 to stand.\n";
-const string blackjack_ace_choice = "Press 1 if you want this ace to be worth 1 point.\nPress 2 if you want this ace to be worth 11 points.\n";
-const string choice_poker = "Press 1 to continue playing.\nPress 2 to fold now.\n";
-const string choice_allin = "Press 1 to go all in.\nPress 2 to fold now.\n";
-
-int get_int(int minimum, int maximum, string query, string err){
-    int Quantity;
-    while ((cout << query and !(cin >> Quantity))  or (Quantity < minimum) or (Quantity > maximum) or cin.peek() != '\n'){    
-        cout << err << endl;    
-        cin.clear();
-        cin.ignore();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    }
-    return Quantity;
-}
-
 int get_random_int(int minimum, int maximum){
     return rand()%(maximum-minimum + 1) + minimum;
 }
 
-string get_password(){
-    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE); 
-    DWORD mode = 0;
-    GetConsoleMode(hStdin, &mode);
-    SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
-
-    string s;
-    cin >> s;
-    SetConsoleMode(hStdin, mode);
-    cout << endl;
-    return s;
-}
-
-
 Deck create_deck(int n){
     Deck D(n, false);
     return D;
-}
-
-string encrypt(string s){
-    string encrypt = s;
-    int size = s.size();
-    for (int i = 0; i < size; i++){
-        if (i%2 == 0) encrypt[i] += i;
-        else encrypt[i] -= i;
-    }
-    return encrypt;
 }
 
 string decode(int n){
@@ -117,15 +57,6 @@ string decode(int n){
     return s;
 }
 
-int max(const vector<int>& v){
-    int max = v[0];
-    int size = v.size();
-    for (int i = 1; i < size; i++){
-        if (v[i] > max) max = v[i];
-    }
-    return max;
-}
-
 int check_for_consecutive(const Cards& hand, int min, int max){
     int size = hand.size();
     Cards cards(14, 0);
@@ -138,7 +69,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
     for (int i = 10; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
-            if (cards[i+j] != 1) good = false; 
+            if (cards[i+j] < 1) good = false; 
         }
         if (good) return i+4;
     }
@@ -381,15 +312,6 @@ bool poker_winner(const Hand& a, const Hand& b){
     return false;
 }
 
-int blackjack_points(int card){
-    if (card%13 == 0){
-        int choice = get_int(1, 2, blackjack_ace_choice, error_options_1_2);
-        if (choice == 1) return 1;
-        return 11;
-    }
-    if (card%13 < 9) return card%13+1;
-    return 10;
-}
 
 int draw_card(Deck& D){
     int size = D.size();
@@ -401,42 +323,6 @@ int draw_card(Deck& D){
     }
     D[r] = true;
     return r;
-}
-
-void roulette(int& money){
-    cout << endl << "Welcome to the Roulette!" << endl;
-    cout << "You have " << money << " coins." << endl;
-    int bet = get_int(1, money, message_bet, error_bet);
-    money -= bet;
-    int choice = get_int(1, 2, options_roulette, error_options_1_2);
-    int winner = get_random_int(0, 36);
-    if (choice == 1){
-        int guess = get_int(1, 36, guess_roulette, error_guess_roulette);
-        cout << endl << "The winner is " << winner << "." << endl;
-        if (guess == winner){
-            cout << "You won " << 35*bet << " coins!" << endl;
-            money += 36*bet;
-        }
-        else{
-            cout << "You lost..." << endl;
-        }
-    }
-    else{
-        int guess = get_int(1, 2, guess_even_odd, error_options_1_2);
-        cout << endl << "The winner is " << winner << "." << endl;
-        if (guess%2 == winner%2 and winner != 0){
-            cout << "You won " << bet << " coins!" << endl;
-            money += 2*bet;
-        }
-        else{
-            cout << "You lost..." << endl;
-        }
-    }
-}
-
-int decide_ace(int score){
-    if (score <= 10) return 11;
-    return 1;
 }
 
 int rate_cards(Cards& hand, Cards& table, string& s){
@@ -480,413 +366,10 @@ int rate_cards(Cards& hand, Cards& table, string& s){
     return 2*bestcard;
 }
 
-void blackjack(int& money){
-    cout << endl << "Welcome to Blackjack!" << endl;
-    cout << "You have " << money << " coins." << endl;
-    int bet = get_int(1, money, message_bet, error_bet);
-    money -= bet;
-    Deck D = create_deck(52);
-    bool cont = true;
-    int score = 0;
-    int dealer_score = 0;
-        
-    //initial hands: 2 cards face up for you, 1 card face up for the dealer
-    int initial_card = draw_card(D);
-    cout << endl << "You got a " << decode(initial_card) << endl;
-    score += blackjack_points(initial_card);
-    initial_card = draw_card(D);
-    cout << "You got a " << decode(initial_card) << endl;
-    score += blackjack_points(initial_card);
-    initial_card = draw_card(D);
-    
-    cout << endl << "The dealer got a " << decode(initial_card) << endl;
-    if (initial_card%13 == 0) dealer_score += decide_ace(dealer_score);
-    else dealer_score += blackjack_points(initial_card);
-    int dealer_tapped_card = draw_card(D);
-    
-    cout << "The dealer's visible score is: " << dealer_score << endl << endl;
-
-    if (dealer_tapped_card%13 == 0) dealer_score += decide_ace(dealer_score);
-    else dealer_score += blackjack_points(dealer_tapped_card);    
-
-    while (cont and score < 21 and dealer_score < 21){
-        cout << "Your score is: " << score << endl;
-        int choice = get_int(1, 2, options_blackjack, error_options_1_2);
-        if (choice == 2){
-            cout << "The dealer's tapped card was a " << decode(dealer_tapped_card) << endl;
-            cont = false;
-        }
-        else if (choice == 1){
-            int card = draw_card(D);
-            cout << endl << "You got a " << decode(card) << endl;
-            score += blackjack_points(card);
-            if (score == 21){
-                cont = false;
-            }
-            else if (score < 21){
-                if (dealer_score < 16 or get_random_int(0, 1) == 1){
-                    card = draw_card(D);
-                    if (card%13 == 0) dealer_score += decide_ace(dealer_score);
-                    else dealer_score += blackjack_points(card);
-                    if (dealer_score == 21){
-                        cont = false;
-                    }
-                }
-                else cout << "The dealer has skipped his turn." << endl;
-            }
-        }
-    }
-    if (score == 21) cout << "Blackjack!" << endl;
-    else if (dealer_score == 21) cout << "Dealer's Blackjack" << endl;
-    cout << "Your score is: " << score << endl;
-    cout << "The dealer's score is: " << dealer_score << endl << endl;
-    bool won;
-    if (score > 21){
-        cout << "You busted." << endl;
-        won = false;
-    }
-    else if (dealer_score > 21){
-        cout << "The dealer busted." << endl;
-        won = true;
-    }
-    else if (score < 10) won = false;
-    else won = (score > dealer_score);
-    if (won){
-        cout << "You won " << bet << " coins!" << endl;
-        money += 2*bet;
-    }    
-    else{
-        cout << endl << "You lost..." << endl;   
-    }
-}
-
-int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& table, int counter){
-    int call = max(bets)-bets[pc.player];
-    //TEMPORARY:
-    //if (get_random_int(0, 100) > 95) return 2*(10+call);
-    //return call;
-    //END TEMPORARY
-    
-    
-    int i = 0;
-    while (table[i] != -1 and i < 5) i++;
-    
-    //decides what to do
-    int r = get_random_int(0, 100);
-    if (i == 0) r /= 4;
-    if (i == 3) r -= r/4;
-    if (i == 4) r -= r/8;
-    
-    //feeling lucky
-    if (r > 80) return (call + get_random_int(0, 3)*(call/2));
-    
-    string s; //useless, but we need an argument for rate
-    int rate = rate_cards(pc.hand, table, s);
-    
-    if (counter == 2){
-        //fold
-        if (r > rate*3){
-            if (max(bets) == 0) return 0;
-            return -1;
-        }
-        //call
-        return max(bets);
-    }
-    else{
-        //raise
-        if (rate > 90) return (10+call)*get_random_int(1, 4);
-        if (rate > 80) return (10+call)*get_random_int(1, 3);
-        if (rate > 65) return (10+call)*get_random_int(1, 2);
-        if (rate > 50 and get_random_int(0, 100) > 5) return call + call/2;
-        //fold
-        if (r > rate*3){
-            if (call == 0) return 0;
-            return -1;
-        }
-        //call
-        else return call;
-    }
-}
-//TODO
-bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame){
-    return true;
-}
-
-//"negotiation" to bet
-void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& bets, vector<bool>& ingame, Computer& pc1, Computer& pc2, Computer& pc3, Cards& table){
-    bool agree = false;
-    int counter = 0;
-    while (not agree and counter < 3){
-        int minimum = max(bets)-bets[0];
-
-        if (primer){
-            cout << "The minimum initial bet is 5 coins." << endl;
-            primer = false;
-            minimum = 5;
-        }
-        else{
-            cout << "The current maximum bet is " << max(bets) << endl;
-            cout << "Your current bet is " << bets[0] << endl;
-            int choice = get_int(1, 2, choice_poker, error_options_1_2);
-            if (choice == 2){
-                fold = true;
-                cout << "You folded!" << endl;
-                cout << "Returning to the casino..." << endl;
-                return;
-            }
-        }
-
-        if (money < minimum){
-            cout << "You have less money than the minimum bet. Wanna go all in?" << endl;
-            int choice = get_int(1, 2, choice_allin, error_options_1_2);
-            if (choice == 2){
-                fold = true;
-                cout << "You folded!" << endl;
-                cout << "Returning to the casino..." << endl;
-                return;
-            }
-            else{
-                all_in = true;
-                bets[0] += money;
-                if (ingame[1]){
-                    if (stays(pc1, bets, ingame)){
-                        bets[1] = bets[0];
-                        cout << "Computer 1 has matched your all-in!" << endl;
-                    }
-                    else{
-                        ingame[1] = false;
-                        cout << "Computer 1 has folded!" << endl;
-                    }
-                }
-                if (ingame[2]){
-                    if (stays(pc1, bets, ingame)){
-                        bets[2] = bets[0];
-                        cout << "Computer 2 has matched your all-in!" << endl;
-                    }
-                    else{
-                        ingame[2] = false;
-                        cout << "Computer 2 has folded!" << endl;
-                    }
-                }
-                if (ingame[3]){
-                    if (stays(pc1, bets, ingame)){
-                        bets[3] = bets[0];
-                        cout << "Computer 3 has matched your all-in!" << endl;
-                    }
-                    else{
-                        ingame[3] = false;
-                        cout << "Computer 3 has folded!" << endl;
-                    }
-                }
-                money = 0;
-                return;
-            }
-        }
-        else{
-            int maximum = money;
-            if (counter == 2) maximum = max(bets)-bets[0];
-            cout << "You have " << money << " coins." << endl;
-            int bet = get_int(minimum, maximum, message_bet, error_bet_poker);
-            money -= bet;
-            bets[0] += bet;
-            
-            cout << endl;
-            
-            if (ingame[1]){
-                int pc1_bet = compute_bet(pc1, bets, ingame, table, counter);
-                if (pc1_bet == -1){
-                    cout << "Computer 1 has folded!" << endl;
-                    ingame[1] = false;
-                }
-                else bets[1] += pc1_bet;
-            }
-            
-            if (ingame[2]){
-                int pc2_bet = compute_bet(pc2, bets, ingame, table, counter);
-                if (pc2_bet == -1){
-                    cout << "Computer 2 has folded!" << endl;
-                    ingame[2] = false;
-                }
-                else bets[2] += pc2_bet;
-            }
-        
-            if (ingame[3]){
-                int pc3_bet = compute_bet(pc3, bets, ingame, table, counter);
-                if (pc3_bet == -1){
-                    cout << "Computer 3 has folded!" << endl;
-                    ingame[3] = false;
-                }
-                else bets[3] += pc3_bet;
-            }
-
-            agree = true;
-            for (int i = 1; i < 4; i++){
-                if (ingame[i] and bets[i] != bets[0]) agree = false;
-            }
-            cout << "The maximum bet has been " << max(bets) << endl;
-        }
-        counter++;
-    }
-}
-
-void poker(int& money){
-    cout << endl << "Welcome to Poker!" << endl;
-    cout << "You have " << money << " coins." << endl << endl;
-    
-    Deck D = create_deck(52);
-    Computer pc1, pc2, pc3;
-    pc1.player = 1;
-    pc2.player = 2;
-    pc3.player = 3;
-    pc1.hand = pc2.hand = pc3.hand = Cards(2, -1);
-    Cards table(5, -1);
-    
-    //here is where all bets go
-    int cumulative = 0;
-    //player gets initial cards
-    Cards your_hand(2);
-    your_hand[0] = draw_card(D);
-    cout << "You got a " << decode(your_hand[0]) << endl;
-    your_hand[1] = draw_card(D);
-    cout << "You got a " << decode(your_hand[1]) << endl << endl;
-    //computer gets initial cards
-    for (int i = 0; i < 2; i++){
-        pc1.hand[i] = draw_card(D);
-        pc2.hand[i] = draw_card(D);
-        pc3.hand[i] = draw_card(D);
-    }
-    
-    //bets[0] is player, bets[i] = pc(i)_bet for i = 1,2,3
-    vector<bool> ingame(4, true);
-    vector<int> bets(4, 0);
-    bool all_in = false;
-    bool primer = true;
-    bool fold = false;
-    //bets are made
-    negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
-    //bets are added to the total and reset
-    cumulative += bets[0] + bets[1] + bets[2] + bets[3];
-    cout << "CUMULATIVE POT: " << cumulative << endl;
-    bets[0] = bets[1] = bets[2] = bets[3] = 0;
-    if (fold) return;
-    //if every opponent is out
-    if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
-        cout << "Every opponent folded, you won!" << endl;
-        cout << "You got " << cumulative << " coins!" << endl;
-        money += cumulative;
-        return;
-    }
-    
-    cout << endl << "THE FOLD" << endl;
-    for (int i = 0; i < 3; i++){
-        table[i] = draw_card(D);
-        cout << decode(table[i]) << endl;
-    }
-    cout << endl;
-    
-    if (not all_in) negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
-    //bets are added to the total and reset
-    cumulative += bets[0] + bets[1] + bets[2] + bets[3];
-    cout << "CUMULATIVE POT: " << cumulative << endl;
-    bets[0] = bets[1] = bets[2] = bets[3] = 0;
-    if (fold) return;
-    //if every opponent is out
-    if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
-        cout << "Every opponent folded, you won!" << endl;
-        cout << "You got " << cumulative << " coins!" << endl;
-        money += cumulative;
-        return;
-    }
-    
-    cout << endl << "THE TURN" << endl;
-    table[3] = draw_card(D);
-    cout << decode(table[3]) << endl << endl;
-    
-    if (not all_in) negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
-    //bets are added to the total and reset
-    cumulative += bets[0] + bets[1] + bets[2] + bets[3];
-    cout << "CUMULATIVE POT: " << cumulative << endl;
-    bets[0] = bets[1] = bets[2] = bets[3] = 0;
-    if (fold) return;
-    //if every opponent is out
-    if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
-        cout << "Every opponent folded, you won!" << endl;
-        cout << "You got " << cumulative << " coins!" << endl;
-        money += cumulative;
-        return;
-    }
-    
-    cout << endl << "THE RIVER" << endl;
-    table[4] = draw_card(D);
-    cout << decode(table[4]) << endl << endl;
-    
-    if (not all_in) negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
-    //bets are added to the total and reset
-    cumulative += bets[0] + bets[1] + bets[2] + bets[3];
-    cout << "CUMULATIVE POT: " << cumulative << endl;
-    if (fold) return;
-    //if every opponent is out
-    if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
-        cout << "Every opponent folded, you won!" << endl;
-        cout << "You got " << cumulative << " coins!" << endl;
-        money += cumulative;
-        return;
-    }
-    
-    vector<Hand> Hands(4);
-    Hands[0] = create_hand(your_hand, table);
-    Hands[1] = create_hand(pc1.hand, table); 
-    Hands[2] = create_hand(pc2.hand, table); 
-    Hands[3] = create_hand(pc3.hand, table); 
-    for (int i = 0; i < 4; i++) Hands[i].player = i;
-    
-    sort(Hands.begin(), Hands.end(), poker_winner);
-    int winner = -1;
-    vector<string> s(4);
-    rate_cards(your_hand, table, s[0]);
-    rate_cards(pc1.hand, table, s[1]);
-    rate_cards(pc2.hand, table, s[2]);
-    rate_cards(pc3.hand, table, s[3]);
-    //for (int i = 0; i < 4; i++){
-        //cout << i+1 << " PLACE: " << Hands[i].player << " with a " << s[Hands[i].player] << endl;
-        //cout << "Hearts: " << Hands[i].hearts << endl;
-        //cout << "Diamonds: " << Hands[i].diamonds << endl;
-        //cout << "Clubs: " << Hands[i].clubs << endl;
-        //cout << "Spades: " << Hands[i].spades << endl;
-    //}
-    for (int i = 0; i < 4 and winner == -1; i++){
-        if (ingame[Hands[i].player]) winner = Hands[i].player;
-    }
-    
-    cout << endl << "TABLE:" << endl;
-    for (int i = 0; i < 5; i++) cout << decode(table[i]) << endl;
-    cout << endl << "YOUR HAND:" << endl;
-    cout << decode(your_hand[0]) << endl << decode(your_hand[1]) << endl;
-    cout << endl << "COMPUTER 1:" << endl;
-    if (not ingame[1]) cout << "had folded" << endl;
-    else cout << decode(pc1.hand[0]) << endl << decode(pc1.hand[1]) << endl;
-    cout << endl << "COMPUTER 2:" << endl;
-    if (not ingame[2]) cout << "had folded" << endl;
-    else cout << decode(pc2.hand[0]) << endl << decode(pc2.hand[1]) << endl;
-    cout << endl << "COMPUTER 3:" << endl;
-    if (not ingame[3]) cout << "had folded" << endl;
-    else cout << decode(pc3.hand[0]) << endl << decode(pc3.hand[1]) << endl;
-    
-    cout << endl;
-    if (winner == 0){
-        cout << "You won!" << endl;
-        cout << "You got " << cumulative << " coins!" << endl;
-        money += cumulative;
-    }
-    else cout << "The winner was Computer " << winner << endl << "You lost..." << endl;
-    return;
-    
-}
-
 int main(){
     srand(time(NULL));
     string s;
-    bool careful = false;
+    bool careful = true;
     while (not careful or cin >> s){
         careful = false;
         Deck D = create_deck(52);
@@ -908,8 +391,8 @@ int main(){
         string s1, s2;
         int r1 = rate_cards(hand1, table, s1);
         int r2 = rate_cards(hand2, table, s2);
-        //if (r1 >= 100 or r2 >= 100) cout << "WOW!" << endl << endl, careful = true;
-        careful = true; //change
+        //if (s1 == "straight" or s2 == "straight") careful = true; //set conditions for when to stop
+        careful = true; //stop at every iteration
         if (careful){
             cout << "TABLE" << endl;
             for (int i = 0; i < 5; i++){

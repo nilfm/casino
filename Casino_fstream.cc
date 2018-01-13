@@ -125,6 +125,7 @@ int max(const vector<int>& v){
     return max;
 }
 
+//checks for royal flush given there's a flush
 int check_for_consecutive(const Cards& hand, int min, int max){
     int size = hand.size();
     Cards cards(14, 0);
@@ -144,6 +145,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
     return -1;
 }
 
+//transforms the two cards structs into a hand, which is more treatable
 Hand create_hand(const Cards& hand, const Cards& table){
     Cards total(2);
     for (int i = 0; i < 2; i++) total[i] = hand[i];
@@ -385,6 +387,7 @@ int blackjack_points(int card){
     return 10;
 }
 
+//gives random card not drawn yet and marks it drawn
 int draw_card(Deck& D){
     int size = D.size();
     bool correct = false;
@@ -610,10 +613,10 @@ bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& table){
     string s; //useless
     int r = rate_cards(pc.hand, table, s);
     int ran = get_random_int(0, 100);
-    if (ran > 25) return true;
-    else if (r > 60) return true;
-    else if (r > 30 and ran > 10) return true;
-    return false;
+    if (ran > 25) return true; //normal thing is to stay
+    else if (r > 60) return true; //if cards are good stay 100%
+    else if (r > 30 and ran > 15) return true; //if cards are decent a little more chance
+    return false; //if all else fails, fold
 }
 
 //"negotiation" to bet
@@ -627,7 +630,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             primer = false;
             minimum = 5;
         }
-        else{
+        else{ 
             cout << "The current maximum bet is " << max(bets) << endl;
             cout << "Your current bet is " << bets[0] << endl;
             int choice = get_int(1, 2, choice_poker, error_options_1_2);
@@ -639,16 +642,16 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             }
         }
 
-        if (money < minimum){
+        if (money < minimum){ //choose all in or fold
             cout << "You have less money than the minimum bet. Wanna go all in?" << endl;
             int choice = get_int(1, 2, choice_allin, error_options_1_2);
-            if (choice == 2){
+            if (choice == 2){ //you folded
                 fold = true;
                 cout << "You folded!" << endl;
                 cout << "Returning to the casino..." << endl;
                 return;
             }
-            else{
+            else{ //you went all in
                 all_in = true;
                 bets[0] += money;
                 if (ingame[1]){
