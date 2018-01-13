@@ -729,7 +729,6 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             for (int i = 1; i < 4; i++){
                 if (ingame[i] and bets[i] != bets[0]) agree = false;
             }
-            cout << "The maximum bet has been " << max(bets) << " coins." << endl;
         }
         counter++;
     }
@@ -770,11 +769,11 @@ void poker(int& money){
     bool fold = false;
     //bets are made
     negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
+    if (fold) return;
     //bets are added to the total and reset
     cumulative += bets[0] + bets[1] + bets[2] + bets[3];
     cout << "CUMULATIVE POT: " << cumulative << endl;
     bets[0] = bets[1] = bets[2] = bets[3] = 0;
-    if (fold) return;
     //if every opponent is out
     if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
         cout << "Every opponent folded, you won!" << endl;
