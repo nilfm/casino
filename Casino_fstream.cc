@@ -30,7 +30,7 @@ struct User{
     string name;
     string password;
     int money;
-    int times_played;
+    int times_lost;
     int high_score;
 };
 
@@ -137,7 +137,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
     for (int i = 10; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
-            if (cards[i+j] != 1) good = false; 
+            if (cards[i+j] < 1) good = false; 
         }
         if (good) return i+4;
     }
@@ -895,7 +895,6 @@ void overwrite(vector<User>& Users, int money, string name){
     for (int i = 0; i < int(Users.size()); i++){
         if (Users[i].money == 0){
             Users[i].money = 50;
-            Users[i].times_played = 0;
         }
         if (Users[i].name == name){
             Users[i].money = money;
@@ -903,7 +902,7 @@ void overwrite(vector<User>& Users, int money, string name){
                 Users[i].high_score = money;
             }
         }
-        file << Users[i].name << " " << Users[i].password << " " << Users[i].money << " " << Users[i].high_score << " " << Users[i].times_played << endl;
+        file << Users[i].name << " " << Users[i].password << " " << Users[i].money << " " << Users[i].high_score << " " << Users[i].times_lost << endl;
     }
     file.close();
 }
@@ -974,7 +973,7 @@ int main(){
         return 1;   // call system to stop
     }
     User u;
-    while (file >> u.name >> u.password >> u.money >> u.high_score >> u.times_played){
+    while (file >> u.name >> u.password >> u.money >> u.high_score >> u.times_lost){
         Users.push_back(u);
     }
     file.close();
@@ -1009,10 +1008,8 @@ int main(){
             return 1;
         }
         cout << "Welcome back, " << name << "!" << endl;
-        Users[previous_user].times_played++;
         if (Users[previous_user].money <= 0){
             Users[previous_user].money = 50;
-            Users[previous_user].times_played = 1;
             money = 50;
         }
     }
@@ -1039,7 +1036,7 @@ int main(){
         new_user.password = encrypt(password1);
         new_user.money = 50;
         new_user.high_score = 50;
-        new_user.times_played = 1;
+        new_user.times_lost = 0;
         Users.push_back(new_user);
         previous_user = Users.size() -1;
     }
@@ -1077,7 +1074,8 @@ int main(){
     
     if (money == 0){
         cout << endl << "You're broke! Game over." << endl;
-        cout << "You had played " << Users[previous_user].times_played << " times." << endl;
+        Users[previous_user].times_lost++;
+        cout << "You have lost " << Users[previous_user].times_lost << " time(s)." << endl;
         cout << "Your high score is " << Users[previous_user].high_score << endl;
     }
     else cout << endl << "You have " << money << " coins. See you soon!" << endl;

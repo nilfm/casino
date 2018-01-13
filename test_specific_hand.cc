@@ -138,7 +138,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
     for (int i = 10; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
-            if (cards[i+j] != 1) good = false; 
+            if (cards[i+j] < 1) good = false; 
         }
         if (good) return i+4;
     }
@@ -892,7 +892,7 @@ int main(){
         }
         cout << endl;
         Cards table(5);
-        cout << "INPUT THE TABLE" << endl;
+        cout << endl << "INPUT THE TABLE" << endl;
         for (int i = 0; i < 5; i++){
             cin >> table[i];
         }
@@ -912,11 +912,11 @@ int main(){
         string s1, s2;
         int r1 = rate_cards(hand1, table, s1);
         int r2 = rate_cards(hand2, table, s2);
-        cout << "TABLE" << endl;
+        
+        cout << endl << "TABLE" << endl;
         for (int i = 0; i < 5; i++){
             cout << decode(table[i]) << endl;
         }
-        cout << endl;
         cout << endl << "HAND 1" << endl;
         for (int i = 0; i < 2; i++){
             cout << decode(hand1[i]) << endl;
