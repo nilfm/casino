@@ -6,6 +6,8 @@
 #include <ctime>
 #include <stdlib.h>
 #include <unistd.h>
+#include <termios.h>
+
 using namespace std;
 
 //FILE ADDRESS
@@ -70,9 +72,34 @@ int get_random_int(int minimum, int maximum){
     return rand()%(maximum-minimum + 1) + minimum;
 }
 
-string get_password(){ //not done on linux yet / placeholder
+
+void HideStdinKeystrokes(){
+    termios tty;
+
+    tcgetattr(STDIN_FILENO, &tty);
+
+    /* we want to disable echo */
+    tty.c_lflag &= ~ECHO;
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+}
+
+void ShowStdinKeystrokes(){
+   termios tty;
+
+    tcgetattr(STDIN_FILENO, &tty);
+
+    /* we want to reenable echo */
+    tty.c_lflag |= ECHO;
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+}
+
+string get_password(){ //not sure this works, still to test
+    HideStdinKeystrokes();
     string s;
     cin >> s;
+    ShowStdinKeystrokes();
     return s;
 }
 
@@ -128,7 +155,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
             else cards[hand[i]%13]++;
         }
     }
-    for (int i = 10; i >= 0; i--){
+    for (int i = 9; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
             if (cards[i+j] < 1) good = false; 
@@ -574,16 +601,16 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
     int rate = rate_cards(pc.hand, table, s);
     
     //if the call is 0, gotta raise a bit
-    if (call == 0 and rate > 20 and r > 45) return call + (10*get_random_int(1, 4) + 5*get_random_int(1, 5));
+    if (call == 0 and (rate > 30 or r > 70) and r > 30) return (10*get_random_int(1, 4) + 5*get_random_int(1, 5));
     
     if (counter == 2){
         //fold
-        if (r > rate*3){
-            if (max(bets) == 0) return 0;
+        if (r > rate*3 or (rate < 30 and r > 85)){
+            if (call == 0) return 0;
             return -1;
         }
         //call
-        return max(bets);
+        return call;
     }
     else{
         //raise
@@ -592,7 +619,7 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
         if (rate > 65 and get_random_int(0, 100) >  50) return (10+call)*get_random_int(1, 2);
         if (rate > 50 and get_random_int(0, 100) > 20) return call + call/2;
         //fold
-        if (r > rate*3){
+        if (r > rate*3 or (rate < 30 and r > 85)){
             if (call == 0) return 0;
             return -1;
         }

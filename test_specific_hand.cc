@@ -66,7 +66,7 @@ int check_for_consecutive(const Cards& hand, int min, int max){
             else cards[hand[i]%13]++;
         }
     }
-    for (int i = 10; i >= 0; i--){
+    for (int i = 9; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
             if (cards[i+j] < 1) good = false; 
