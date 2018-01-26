@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <ctime>
 #include <stdlib.h>
+#include <limits>
 using namespace std;
 
 typedef vector<bool> Deck;
@@ -102,25 +103,27 @@ int max(const vector<int>& v){
     return max;
 }
 
+//checks for royal flush given there's a flush
 int check_for_consecutive(const Cards& hand, int min, int max){
     int size = hand.size();
     Cards cards(14, 0);
     for (int i = 0; i < size; i++){
         if (hand[i] >= min and hand[i] <= max){
-            if (hand[i]%13 == 0) cards[0]++, cards[12]++;
+            if (hand[i]%13 == 0) cards[0]++, cards[13]++;
             else cards[hand[i]%13]++;
         }
     }
-    for (int i = 10; i >= 0; i--){
+    for (int i = 9; i >= 0; i--){
         bool good = true;
         for (int j = 0; j < 5; j++){
-            if (cards[i+j] != 1) good = false; 
+            if (cards[i+j] < 1) good = false; 
         }
         if (good) return i+4;
     }
     return -1;
 }
 
+//transforms the two cards structs into a hand, which is more treatable
 Hand create_hand(const Cards& hand, const Cards& table){
     Cards total(2);
     for (int i = 0; i < 2; i++) total[i] = hand[i];
@@ -182,7 +185,7 @@ int check_full(const Hand& a, const Hand& b){
     int two_b = -1;
     for (int i = 12; i >= 0; i--){
         if (a.cards[i] == 3) three_a = i;
-        if (b.cards[i] == 3) three_a = i;
+        if (b.cards[i] == 3) three_b = i;
         if (a.cards[i] == 2) two_a = i;
         if (b.cards[i] == 2) two_b = i;
     }
@@ -217,7 +220,6 @@ int check_straight(const Hand& a){
     for (int i = 0; i < 9; i++){
         if (a.cards[i] >= 1){
             if (a.cards[i+1] >= 1 and a.cards[i+2] >= 1 and a.cards[i+3] >= 1 and a.cards[i+4] >= 1) return i+4;
-            return -1;
         }
     }
     if (a.cards[12] >= 1 and a.cards[0] >= 1 and a.cards[1] >= 1 and a.cards[2] >= 1 and a.cards[3] >= 1){
@@ -363,6 +365,7 @@ int blackjack_points(int card){
     return 10;
 }
 
+//gives random card not drawn yet and marks it drawn
 int draw_card(Deck& D){
     int size = D.size();
     bool correct = false;
@@ -496,12 +499,15 @@ void blackjack(int& money){
                 cont = false;
             }
             else if (score < 21){
-                card = draw_card(D);
-                if (card%13 == 0) dealer_score += decide_ace(dealer_score);
-                else dealer_score += blackjack_points(card);
-                if (dealer_score == 21){
-                    cont = false;
+                if (dealer_score < 16 or get_random_int(0, 1) == 1){
+                    card = draw_card(D);
+                    if (card%13 == 0) dealer_score += decide_ace(dealer_score);
+                    else dealer_score += blackjack_points(card);
+                    if (dealer_score == 21){
+                        cont = false;
+                    }
                 }
+                else cout << "The dealer has skipped his turn." << endl;
             }
         }
     }
@@ -536,39 +542,42 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
     //return call;
     //END TEMPORARY
     
-    
+    //what turn are we in
     int i = 0;
     while (table[i] != -1 and i < 5) i++;
     
-    //decides what to do
+    //r decides what to do
     int r = get_random_int(0, 100);
     if (i == 0) r /= 4;
     if (i == 3) r -= r/4;
     if (i == 4) r -= r/8;
     
     //feeling lucky
-    if (r > 80) return (call + get_random_int(0, 3)*(call/2));
+    if (r > 85) return (call + get_random_int(0, 3)*(call/2));
     
     string s; //useless, but we need an argument for rate
     int rate = rate_cards(pc.hand, table, s);
     
+    //if the call is 0, gotta raise a bit
+    if (call == 0 and (rate > 30 or r > 70) and r > 30) return (10*get_random_int(1, 4) + 5*get_random_int(1, 5));
+    
     if (counter == 2){
         //fold
-        if (r > rate*3){
-            if (max(bets) == 0) return 0;
+        if (r > rate*3 or (rate < 30 and r > 85)){
+            if (call == 0) return 0;
             return -1;
         }
         //call
-        return max(bets);
+        return call;
     }
     else{
         //raise
         if (rate > 90) return (10+call)*get_random_int(1, 4);
         if (rate > 80) return (10+call)*get_random_int(1, 3);
-        if (rate > 65) return (10+call)*get_random_int(1, 2);
-        if (rate > 50 and get_random_int(0, 100) > 5) return call + call/2;
+        if (rate > 65 and get_random_int(0, 100) >  50) return (10+call)*get_random_int(1, 2);
+        if (rate > 50 and get_random_int(0, 100) > 20) return call + call/2;
         //fold
-        if (r > rate*3){
+        if (r > rate*3 or (rate < 30 and r > 85)){
             if (call == 0) return 0;
             return -1;
         }
@@ -576,9 +585,16 @@ int compute_bet(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& ta
         else return call;
     }
 }
-//TODO
-bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame){
-    return true;
+
+//TOFINISH
+bool stays(Computer& pc, vector<int>& bets, vector<bool>& ingame, Cards& table){
+    string s; //useless
+    int r = rate_cards(pc.hand, table, s);
+    int ran = get_random_int(0, 100);
+    if (ran > 25) return true; //normal thing is to stay
+    else if (r > 60) return true; //if cards are good stay 100%
+    else if (r > 30 and ran > 15) return true; //if cards are decent a little more chance
+    return false; //if all else fails, fold
 }
 
 //"negotiation" to bet
@@ -592,7 +608,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             primer = false;
             minimum = 5;
         }
-        else{
+        else{ 
             cout << "The current maximum bet is " << max(bets) << endl;
             cout << "Your current bet is " << bets[0] << endl;
             int choice = get_int(1, 2, choice_poker, error_options_1_2);
@@ -604,20 +620,20 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             }
         }
 
-        if (money < minimum){
+        if (money < minimum){ //choose all in or fold
             cout << "You have less money than the minimum bet. Wanna go all in?" << endl;
             int choice = get_int(1, 2, choice_allin, error_options_1_2);
-            if (choice == 2){
+            if (choice == 2){ //you folded
                 fold = true;
                 cout << "You folded!" << endl;
                 cout << "Returning to the casino..." << endl;
                 return;
             }
-            else{
+            else{ //you went all in
                 all_in = true;
                 bets[0] += money;
                 if (ingame[1]){
-                    if (stays(pc1, bets, ingame)){
+                    if (stays(pc1, bets, ingame, table)){
                         bets[1] = bets[0];
                         cout << "Computer 1 has matched your all-in!" << endl;
                     }
@@ -627,7 +643,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
                     }
                 }
                 if (ingame[2]){
-                    if (stays(pc1, bets, ingame)){
+                    if (stays(pc1, bets, ingame, table)){
                         bets[2] = bets[0];
                         cout << "Computer 2 has matched your all-in!" << endl;
                     }
@@ -637,7 +653,7 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
                     }
                 }
                 if (ingame[3]){
-                    if (stays(pc1, bets, ingame)){
+                    if (stays(pc1, bets, ingame, table)){
                         bets[3] = bets[0];
                         cout << "Computer 3 has matched your all-in!" << endl;
                     }
@@ -652,7 +668,10 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
         }
         else{
             int maximum = money;
-            if (counter == 2) maximum = max(bets)-bets[0];  
+            if (counter == 2) maximum = max(bets)-bets[0];
+            cout << "You have " << money << " coins." << endl;
+            cout << "The minimum bet is " << minimum << " coins." << endl;
+            cout << "The maximum bet is " << maximum << " coins." << endl;
             int bet = get_int(minimum, maximum, message_bet, error_bet_poker);
             money -= bet;
             bets[0] += bet;
@@ -690,13 +709,9 @@ void negotiate(int& money, bool& fold, bool& all_in, bool& primer, vector<int>& 
             for (int i = 1; i < 4; i++){
                 if (ingame[i] and bets[i] != bets[0]) agree = false;
             }
-            for (int i = 1; i < 4; i++){
-                if (ingame[i]) cout << "Computer " << i << " bet " << bets[i] << endl;
-            }
         }
         counter++;
     }
-    cout << endl << "All players have agreed." << endl;
 }
 
 void poker(int& money){
@@ -734,11 +749,11 @@ void poker(int& money){
     bool fold = false;
     //bets are made
     negotiate(money, fold, all_in, primer, bets, ingame, pc1, pc2, pc3, table);
+    if (fold) return;
     //bets are added to the total and reset
     cumulative += bets[0] + bets[1] + bets[2] + bets[3];
     cout << "CUMULATIVE POT: " << cumulative << endl;
     bets[0] = bets[1] = bets[2] = bets[3] = 0;
-    if (fold) return;
     //if every opponent is out
     if (ingame[1] == false and ingame[2] == false and ingame[3] == false){
         cout << "Every opponent folded, you won!" << endl;
@@ -817,13 +832,13 @@ void poker(int& money){
     rate_cards(pc1.hand, table, s[1]);
     rate_cards(pc2.hand, table, s[2]);
     rate_cards(pc3.hand, table, s[3]);
-    for (int i = 0; i < 4; i++){
-        cout << i+1 << " PLACE: " << Hands[i].player << " with a " << s[Hands[i].player] << endl;
+    //for (int i = 0; i < 4; i++){
+        //cout << i+1 << " PLACE: " << Hands[i].player << " with a " << s[Hands[i].player] << endl;
         //cout << "Hearts: " << Hands[i].hearts << endl;
         //cout << "Diamonds: " << Hands[i].diamonds << endl;
         //cout << "Clubs: " << Hands[i].clubs << endl;
         //cout << "Spades: " << Hands[i].spades << endl;
-    }
+    //}
     for (int i = 0; i < 4 and winner == -1; i++){
         if (ingame[Hands[i].player]) winner = Hands[i].player;
     }
