@@ -1,5 +1,4 @@
 # Casino
-Little game I'm making in C++, work in progress
 
 INSTRUCTIONS TO SET UP Casino_windows OR Casino_linux
 
@@ -9,4 +8,3 @@ INSTRUCTIONS TO SET UP Casino_windows OR Casino_linux
 
 -compile and run the code
 
-enjoy :)
